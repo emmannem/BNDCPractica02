@@ -7,7 +7,9 @@ package org.uv.BDNCPractica02;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,7 +23,7 @@ import org.springframework.web.bind.annotation.PutMapping;
  * @author JMRes
  */
 @RestController
-@RequestMapping("/url")
+@RequestMapping("/api/persona")
 public class ControllerPersona {
 
     @Autowired
@@ -34,22 +36,47 @@ public class ControllerPersona {
 
     @GetMapping("/{id}")
     public Object get(@PathVariable String id) {
-        return null;
+        Optional<Persona> optPersona = repositoryPersona.findById(id);
+        if (optPersona.isPresent()) {
+            return ResponseEntity.ok().body(optPersona);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> put(@PathVariable String id, @RequestBody Object input) {
-        return null;
+    public ResponseEntity<Persona> put(@PathVariable String id, @RequestBody Persona persona) {
+        Optional<Persona> dataPersona = repositoryPersona.findById(id);
+        if (dataPersona.isPresent()) {
+            Persona _persona = dataPersona.get();
+            _persona.setNombre(persona.getNombre());
+            _persona.setDireccion(persona.getDireccion());
+            _persona.setTelefono(persona.getTelefono());
+            repositoryPersona.save(_persona);
+            return ResponseEntity.ok().body(_persona);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping
-    public ResponseEntity<?> post(@RequestBody Object input) {
-        return null;
+    public ResponseEntity<Persona> post(@RequestBody Persona persona) {
+        try {
+            Persona savedPersona = repositoryPersona.save(persona);
+            return ResponseEntity.ok().body(savedPersona);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable String id) {
-        return null;
+        try {
+            repositoryPersona.deleteById(id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
 }
