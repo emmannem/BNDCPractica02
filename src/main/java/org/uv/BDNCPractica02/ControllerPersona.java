@@ -31,7 +31,12 @@ public class ControllerPersona {
 
     @GetMapping()
     public List<Persona> list() {
-        return repositoryPersona.findAll();
+        List<Persona> lstPersonas = repositoryPersona.findAll();
+        if (!lstPersonas.isEmpty()) {
+            return lstPersonas;
+        } else {
+            return null;
+        }
     }
 
     @GetMapping("/{id}")
@@ -70,12 +75,17 @@ public class ControllerPersona {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable String id) {
-        try {
-            repositoryPersona.deleteById(id);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    public ResponseEntity<Persona> delete(@PathVariable String id) {
+        Optional<Persona> optEmpleado = repositoryPersona.findById(id);
+        if (optEmpleado.isPresent()) {
+            try {
+                repositoryPersona.deleteById(id);
+                return ResponseEntity.ok().build();
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            }
+        } else {
+            return ResponseEntity.notFound().build();
         }
     }
 
