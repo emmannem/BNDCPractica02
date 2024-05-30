@@ -11,6 +11,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.PutMapping;
  * @author JMRes
  */
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("/api/persona")
 public class ControllerPersona {
 
@@ -30,13 +32,9 @@ public class ControllerPersona {
     private RepositoryPersona repositoryPersona;
 
     @GetMapping()
-    public List<Persona> list() {
+    public ResponseEntity<List<Persona>> list() {
         List<Persona> lstPersonas = repositoryPersona.findAll();
-        if (!lstPersonas.isEmpty()) {
-            return lstPersonas;
-        } else {
-            return null;
-        }
+        return ResponseEntity.ok(lstPersonas);
     }
 
     @GetMapping("/{id}")
@@ -57,8 +55,8 @@ public class ControllerPersona {
             _persona.setNombre(persona.getNombre());
             _persona.setDireccion(persona.getDireccion());
             _persona.setTelefono(persona.getTelefono());
-            repositoryPersona.save(_persona);
-            return ResponseEntity.ok().body(_persona);
+            Persona updatedPersona = repositoryPersona.save(_persona);
+            return ResponseEntity.ok().body(updatedPersona);
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -68,7 +66,7 @@ public class ControllerPersona {
     public ResponseEntity<Persona> post(@RequestBody Persona persona) {
         try {
             Persona savedPersona = repositoryPersona.save(persona);
-            return ResponseEntity.ok().body(savedPersona);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedPersona);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
@@ -86,6 +84,16 @@ public class ControllerPersona {
             }
         } else {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/all")
+    public ResponseEntity<Persona> deleteAll() {
+        try {
+            repositoryPersona.deleteAll();
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 

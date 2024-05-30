@@ -1,0 +1,44 @@
+version: "3.1"
+services:
+  mongouv:
+    container_name: mongodb
+    image: mongo:7.0.8
+    restart: always
+    environment:
+      - MONGO_INITDB_DATABASE=mibase
+      - MONGO_INITDB_USER=admin
+      - MONGO_INITDB_PWD=password
+
+    networks:
+      - app_net
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./mongo:/data/db
+
+  backend-personas:
+    container_name: bdnc02back-personas
+    image: joseemanuel/bdnc02back-personas:latest
+    ports:
+      - "8080:8080"
+    networks:
+      - app_net
+    depends_on:
+      - mongouv
+
+  frontend-personas:
+    container_name: bdnc03front-personas
+
+    image: joseemanuel/bdnc03front-personas:latest
+    networks:
+      - app_net
+    ports:
+      - "80:80"
+    depends_on:
+      - backend-personas
+    links:
+      - backend-personas
+
+networks:
+  app_net:
+    driver: bridge
